@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>仪表盘 - {{ app_name }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- 导航栏 -->
+    <nav class="gradient-bg text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center space-x-3">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>
+                    <span class="text-xl font-bold">{{ app_name }}</span>
+                </div>
+                <div class="flex items-center space-x-6">
+                    <a href="/" class="hover:text-gray-200 transition">首页</a>
+                    <a href="/dashboard" class="font-semibold border-b-2 border-white">仪表盘</a>
+                    <a href="/trends" class="hover:text-gray-200 transition">热点</a>
+                    <a href="/analytics" class="hover:text-gray-200 transition">分析</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 页面标题 -->
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800">📊 仪表盘</h1>
+            <p class="text-gray-600 mt-1">实时监控热点数据，洞察趋势变化</p>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8" id="stats-cards">
+            <div class="bg-white rounded-xl p-6 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">总热点数</p>
+                        <p class="text-3xl font-bold text-gray-800" id="total-items">-</p>
+                    </div>
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">今日新增</p>
+                        <p class="text-3xl font-bold text-green-600" id="today-items">-</p>
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 shadow-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">活跃平台</p>
+                        <p class="text-3xl font-bold text-purple-600" id="active-platforms">-</p>
+                    </div>
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl p-6 shadow-lg cursor-pointer hover:shadow-xl transition" onclick="triggerCrawl()">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-500 text-sm">立即爬取</p>
+                        <p class="text-lg font-bold text-orange-600">点击开始</p>
+                    </div>
+                    <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 图表区域 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- 平台分布 -->
+            <div class="bg-white rounded-xl p-6 shadow-lg">
+                <h3 class="text-lg font-semibold mb-4">📱 平台分布</h3>
+                <canvas id="platformChart" height="200"></canvas>
+            </div>
+
+            <!-- 情感分布 -->
+            <div class="bg-white rounded-xl p-6 shadow-lg">
+                <h3 class="text-lg font-semibold mb-4">💭 情感分布</h3>
+                <canvas id="sentimentChart" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- 趋势图 -->
+        <div class="bg-white rounded-xl p-6 shadow-lg mb-8">
+            <h3 class="text-lg font-semibold mb-4">📈 24小时趋势</h3>
+            <canvas id="trendChart" height="100"></canvas>
+        </div>
+
+        <!-- 最新热点 -->
+        <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6 border-b border-gray-200">
+                <h3 class="text-lg font-semibold">🔥 最新热点</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">平台</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">标题</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">情感</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">热度</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">时间</th>
+                        </tr>
+                    </thead>
+                    <tbody id="latest-trends" class="divide-y divide-gray-200">
+                        <!-- 动态填充 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载时获取数据
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDashboardData();
+        });
+
+        // 加载仪表盘数据
+        async function loadDashboardData() {
+            try {
+                const response = await fetch('/api/dashboard');
+                const data = await response.json();
+                
+                // 更新统计卡片
+                document.getElementById('total-items').textContent = data.total_items.toLocaleString();
+                document.getElementById('today-items').textContent = data.today_items.toLocaleString();
+                document.getElementById('active-platforms').textContent = data.active_platforms;
+                
+                // 渲染图表
+                renderPlatformChart(data.platform_chart);
+                renderSentimentChart(data.sentiment_chart);
+                renderTrendChart(data.trend_chart);
+                
+                // 渲染最新热点
+                renderLatestTrends(data.latest_items);
+                
+            } catch (error) {
+                console.error('加载数据失败:', error);
+            }
+        }
+
+        // 渲染平台分布图
+        function renderPlatformChart(chartData) {
+            const ctx = document.getElementById('platformChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: chartData.labels.map(l => getPlatformName(l)),
+                    datasets: [{
+                        data: chartData.data,
+                        backgroundColor: [
+                            '#EF4444', '#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // 渲染情感分布图
+        function renderSentimentChart(chartData) {
+            const ctx = document.getElementById('sentimentChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: chartData.labels.map(l => getSentimentName(l)),
+                    datasets: [{
+                        data: chartData.data,
+                        backgroundColor: ['#10B981', '#EF4444', '#6B7280']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // 渲染趋势图
+        function renderTrendChart(chartData) {
+            const ctx = document.getElementById('trendChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartData.labels,
+                    datasets: [{
+                        label: '热点数量',
+                        data: chartData.data,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        // 渲染最新热点
+        function renderLatestTrends(items) {
+            const tbody = document.getElementById('latest-trends');
+            tbody.innerHTML = items.map(item => `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            ${getPlatformName(item.platform)}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <a href="${item.url || '#' }" target="_blank" class="text-blue-600 hover:text-blue-800 font-medium">
+                            ${item.title}
+                        </a>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getSentimentClass(item.sentiment)}">
+                            ${getSentimentName(item.sentiment)}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                <div class="bg-orange-500 h-2 rounded-full" style="width: ${Math.min(item.hot_score, 100)}%"></div>
+                            </div>
+                            <span class="text-sm text-gray-600">${Math.round(item.hot_score)}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        ${formatTime(item.created_at)}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // 触发爬虫
+        async function triggerCrawl() {
+            if (!confirm('确定要立即开始爬取热点数据吗？')) return;
+            
+            try {
+                const response = await fetch('/api/crawl', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`爬取完成！共保存 ${data.total_items} 条数据`);
+                    loadDashboardData(); // 刷新数据
+                } else {
+                    alert('爬取失败: ' + data.message);
+                }
+            } catch (error) {
+                alert('请求失败: ' + error.message);
+            }
+        }
+
+        // 辅助函数
+        function getPlatformName(platform) {
+            const names = {
+                'weibo': '微博',
+                'zhihu': '知乎',
+                'baidu': '百度',
+                'bilibili': 'B站',
+                'toutiao': '头条',
+                'douyin': '抖音'
+            };
+            return names[platform] || platform;
+        }
+
+        function getSentimentName(sentiment) {
+            const names = {
+                'positive': '正面',
+                'negative': '负面',
+                'neutral': '中性'
+            };
+            return names[sentiment] || sentiment;
+        }
+
+        function getSentimentClass(sentiment) {
+            const classes = {
+                'positive': 'bg-green-100 text-green-800',
+                'negative': 'bg-red-100 text-red-800',
+                'neutral': 'bg-gray-100 text-gray-800'
+            };
+            return classes[sentiment] || 'bg-gray-100 text-gray-800';
+        }
+
+        function formatTime(timeStr) {
+            const date = new Date(timeStr);
+            return date.toLocaleString('zh-CN', { 
+                month: 'short', 
+                day: 'numeric', 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+        }
+    </script>
+</body>
+</html>

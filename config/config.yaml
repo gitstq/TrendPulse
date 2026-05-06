@@ -1,0 +1,128 @@
+# TrendPulse 配置文件
+# 智能热点监控分析平台
+
+app:
+  name: "TrendPulse"
+  version: "1.0.0"
+  description: "智能热点脉动监控与分析平台"
+  debug: false
+  host: "0.0.0.0"
+  port: 8000
+
+# 监控配置
+monitor:
+  # 运行模式: daily(日报) / current(实时) / incremental(增量)
+  mode: "incremental"
+  # 定时任务Cron表达式 (仅daily模式有效)
+  schedule: "0 9 * * *"
+  # 监控间隔（分钟，仅incremental模式有效）
+  interval: 30
+  # 历史数据保留天数
+  retention_days: 30
+
+# 关键词配置
+keywords:
+  # 关注的关键词列表
+  focus:
+    - "人工智能"
+    - "AI"
+    - "大模型"
+    - "ChatGPT"
+    - "科技"
+    - "互联网"
+  # 必须同时出现的关键词（+前缀）
+  required: []
+  # 过滤词（!前缀）
+  exclude:
+    - "广告"
+    - "推广"
+    - "色情"
+    - "赌博"
+
+# 平台配置
+platforms:
+  weibo:
+    enabled: true
+    url: "https://s.weibo.com/top/summary"
+    priority: 1
+  zhihu:
+    enabled: true
+    url: "https://www.zhihu.com/hot"
+    priority: 2
+  baidu:
+    enabled: true
+    url: "https://top.baidu.com/board"
+    priority: 3
+  bilibili:
+    enabled: true
+    url: "https://api.bilibili.com/x/web-interface/ranking/v2"
+    priority: 4
+  toutiao:
+    enabled: true
+    url: "https://www.toutiao.com/hot-event/hot-board/"
+    priority: 5
+  douyin:
+    enabled: true
+    url: "https://www.douyin.com/aweme/v1/web/hot/search/list/"
+    priority: 6
+
+# AI分析配置
+ai:
+  # AI提供商: openai / anthropic / local
+  provider: "openai"
+  # API密钥（从环境变量读取，此处仅作占位）
+  api_key: "${AI_API_KEY}"
+  # 模型名称
+  model: "gpt-3.5-turbo"
+  # 是否启用AI摘要
+  enable_summary: true
+  # 是否启用情感分析
+  enable_sentiment: true
+  # 摘要最大长度
+  summary_max_length: 200
+
+# 通知配置
+notifications:
+  # 企业微信
+  wecom:
+    enabled: false
+    webhook_url: "${WECOM_WEBHOOK_URL}"
+  # 飞书
+  feishu:
+    enabled: false
+    webhook_url: "${FEISHU_WEBHOOK_URL}"
+  # 钉钉
+  dingtalk:
+    enabled: false
+    webhook_url: "${DINGTALK_WEBHOOK_URL}"
+  # Telegram
+  telegram:
+    enabled: false
+    bot_token: "${TELEGRAM_BOT_TOKEN}"
+    chat_id: "${TELEGRAM_CHAT_ID}"
+  # 邮件
+  email:
+    enabled: false
+    smtp_host: "${EMAIL_SMTP_HOST}"
+    smtp_port: 587
+    smtp_user: "${EMAIL_SMTP_USER}"
+    smtp_password: "${EMAIL_SMTP_PASSWORD}"
+    to_email: "${EMAIL_TO}"
+
+# 数据库配置
+database:
+  # 数据库类型: sqlite / mysql / postgresql
+  type: "sqlite"
+  # SQLite数据库路径
+  sqlite_path: "./data/trendpulse.db"
+  # 连接池配置
+  pool_size: 5
+  max_overflow: 10
+
+# 日志配置
+logging:
+  level: "INFO"
+  format: "{time:YYYY-MM-DD HH:mm:ss} | {level} | {message}"
+  file: "./logs/trendpulse.log"
+  rotation: "1 day"
+  retention: "30 days"
