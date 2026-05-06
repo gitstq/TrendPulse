@@ -154,13 +154,11 @@ def load_settings(config_path: str = "config/config.yaml") -> Settings:
     yaml_config = load_yaml_config(config_path)
     
     # 创建Settings实例
-    settings = Settings()
-    
-    # 更新配置
     if yaml_config:
-        for key, value in yaml_config.items():
-            if hasattr(settings, key):
-                setattr(settings, key, value)
+        # 使用YAML配置创建Settings
+        settings = Settings(**yaml_config)
+    else:
+        settings = Settings()
     
     return settings
 
