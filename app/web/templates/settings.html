@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}设置 - TrendPulse{% endblock %}
+
+{% block content %}
+<!-- 页面标题 -->
+<div class="page-header">
+    <h1 class="page-title">⚙️ 系统设置</h1>
+    <p class="page-subtitle">配置爬虫、AI分析和通知渠道</p>
+</div>
+
+<!-- 平台配置 -->
+<div class="card" style="margin-bottom: 2rem;">
+    <div class="card-header">
+        <h3 class="card-title">🕷️ 爬虫平台配置</h3>
+    </div>
+    <div class="card-body">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+            {% for platform, pconfig in config.platforms.items() %}
+            <div style="padding: 1rem; background: var(--bg-tertiary); border-radius: var(--radius);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span class="platform-badge platform-{{ platform }}">{{ platform.upper() }}</span>
+                    <span class="badge {% if pconfig.enabled %}badge-green{% else %}badge-gray{% endif %}">
+                        {{ "启用" if pconfig.enabled else "禁用" }}
+                    </div>
+    </div>
+</div>
+
+<!-- 配置文件说明 -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">📄 配置文件说明</h3>
+    </div>
+    <div class="card-body">
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+            配置文件位于项目根目录的 <code>config.yaml</code>，首次使用请复制 <code>config.yaml.example</code> 并进行修改。
+        </p>
+        <div style="background: var(--bg-tertiary); padding: 1rem; border-radius: var(--radius); overflow-x: auto;">
+            <pre style="margin: 0; color: var(--text-primary); font-size: 0.875rem;"><code># 复制示例配置文件
+cp config.yaml.example config.yaml
+
+# 编辑配置文件
+vim config.yaml</code></pre>
+        </div>
+        <div style="margin-top: 1rem;">
+            <a href="https://github.com/gitstq/TrendPulse" target="_blank" class="btn btn-secondary">📖 查看完整文档</a>
+        </div>
+    </div>
+</div>
+{% endblock %}span>
+                </div>
+                <div style="color: var(--text-secondary); font-size: 0.875rem;">
+                    限制数量: {{ pconfig.limit }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- AI配置 -->
+<div class="card" style="margin-bottom: 2rem;">
+    <div class="card-header">
+        <h3 class="card-title">🤖 AI分析配置</h3>
+    </div>
+    <div class="card-body">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+            <div style="padding: 1rem; background: var(--bg-tertiary); border-radius: var(--radius);">
+                <div style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.25rem;">AI提供商</div>
+                <div style="font-weight: 600;">{{ config.ai.provider }}</div>
+            </div>
+            <div style="padding: 1rem; background: var(--bg-tertiary); border-radius: var(--radius);">
+                <div style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.25rem;">模型</div>
+                <div style="font-weight: 600;">{{ config.ai.model }}</div>
+            </div>
+            <div style="padding: 1rem; background: var(--bg-tertiary); border-radius: var(--radius);">
+                <div style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.25rem;">温度</div>
+                <div style="font-weight: 600;">{{ config.ai.temperature }}</div>
+            </div>
+            <div style="padding: 1rem; background: var(--bg-tertiary); border-radius: var(--radius);">
+                <div style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.25rem;">最小热度阈值</div>
+                <div style="font-weight: 600;">{{ config.analysis.min_hot_score }}</div>
+            </div>
+        </div>
+        <div style="margin-top: 1rem; padding: 1rem; background: var(--bg-tertiary); border-radius: var(--radius);">
+            <div style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.5rem;">API密钥状态</div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                {% if config.ai.api_key %}
+                <span class="badge badge-green">✅ 已配置</span>
+                {% else %}
+                <span class="badge badge-red">❌ 未配置</span>
+                <span style="color: var(--text-secondary); font-size: 0.875rem;">请在 config.yaml 中配置 AI_API_KEY</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 通知配置 -->
+<div class="card" style="margin-bottom: 2rem;">
+    <div class="card-header">
+        <h3 class="card-title">📢 通知渠道配置</h3>
+    </div>
+    <div class="card-body">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+            {% for notifier, nconfig in config.notifiers.items() %}
+            <div style="padding: 1rem; background: var(--bg-tertiary); border-radius: var(--radius);">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                    <span style="font-weight: 600;">{{ notifier.upper() }}</span>
+                    <span class="badge {% if nconfig.enabled %}badge-green{% else %}badge-gray{% endif %}">
+                        {{ "启用" if nconfig.enabled else "禁用" }}
+                    </span>
+                </div>
+                {% if notifier == 'wechat' and nconfig.webhook_url %}
+                <div style="color: var(--text-secondary); font-size: 0.75rem;">Webhook 已配置</div>
+                {% elif notifier == 'dingtalk' and nconfig.webhook_url %}
+                <div style="color: var(--text-secondary); font-size: 0.75rem;">Webhook 已配置</div>
+                {% elif notifier == 'telegram' and nconfig.bot_token %}
+                <div style="color: var(--text-secondary); font-size: 0.75rem;">Bot 已配置</div>
+                {% elif notifier == 'email' and nconfig.smtp_host %}
+                <div style="color: var(--text-secondary); font-size: 0.75rem;">SMTP 已配置</div>
+                {% else %}
+                <div style="color: var(--text-muted); font-size: 0.75rem;">未配置</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- 定时任务配置 -->
+<div class="card" style="margin-bottom: 2rem;">
+    <div class="card-header">
+        <h3 class="card-title">⏰ 定时任务配置</h3>
+    </div>
+    <div class="card-body">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+            <div style="padding: 1rem; background: var(--bg-tertiary); border-radius: var(--radius);">
+                <div style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.25rem;">默认调度</div>
+                <div style="font-weight: 600;">{{ config.scheduler.default_schedule }}</div>
+                <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 0.25rem;">Cron表达式</div>
+            </div>
+            <div style="padding: 1rem; background: var(--bg-tertiary); border-radius: var(--radius);">
+                <div style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.25rem;">时区</div>
+                <div style="font-weight: 600;">{{ config.scheduler.timezone }}</div>
+            </div>
+            <div style="padding: 1rem; background: var(--bg-tertiary); border-radius: var(--radius);">
+                <div style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 0.25rem;">启动时执行</div>
+                <div style="font-weight: 600;">{{ "是" if config.scheduler.run_on_startup else "否" }}</div>
+            </div>
+        </

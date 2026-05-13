@@ -1,0 +1,110 @@
+# TrendPulse 配置文件示例
+# 复制此文件为 config.yaml 并修改配置
+
+# 应用配置
+app:
+  name: "TrendPulse"
+  version: "1.0.0"
+  debug: false
+  host: "0.0.0.0"
+  port: 8080
+  secret_key: "your-secret-key-here"
+
+# 数据库配置
+database:
+  url: "sqlite:///./data/trendpulse.db"
+
+# AI分析配置
+ai:
+  provider: "openai"  # 可选: openai, claude, local
+  api_key: "your-api-key-here"
+  base_url: null  # 自定义API地址，留空使用默认
+  model: "gpt-3.5-turbo"
+  temperature: 0.7
+  max_tokens: 2000
+
+# 爬虫配置
+crawler:
+  # 请求间隔（秒）
+  delay: 2
+  # 超时时间（秒）
+  timeout: 30
+  # 重试次数
+  retries: 3
+  # 用户代理
+  user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+
+# 平台配置
+platforms:
+  zhihu:
+    enabled: true
+    url: "https://www.zhihu.com/hot"
+    limit: 50
+  weibo:
+    enabled: true
+    url: "https://s.weibo.com/top/summary"
+    limit: 50
+  bilibili:
+    enabled: true
+    url: "https://api.bilibili.com/x/web-interface/ranking/v2"
+    limit: 50
+  github:
+    enabled: true
+    url: "https://github.com/trending"
+    limit: 25
+  hackernews:
+    enabled: true
+    url: "https://news.ycombinator.com/"
+    limit: 30
+
+# 通知配置
+notifiers:
+  wechat:
+    enabled: false
+    webhook_url: "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=your-key"
+  dingtalk:
+    enabled: false
+    webhook_url: "https://oapi.dingtalk.com/robot/send?access_token=your-token"
+    secret: "your-secret"
+  telegram:
+    enabled: false
+    bot_token: "your-bot-token"
+    chat_id: "your-chat-id"
+  email:
+    enabled: false
+    smtp_host: "smtp.gmail.com"
+    smtp_port: 587
+    smtp_user: "your-email@gmail.com"
+    smtp_password: "your-password"
+    to_email: "recipient@example.com"
+
+# 定时任务配置
+scheduler:
+  # 默认监控频率（Cron表达式）
+  # 每30分钟执行一次
+  default_schedule: "*/30 * * * *"
+  # 启动时立即执行一次
+  run_on_startup: true
+  # 时区
+  timezone: "Asia/Shanghai"
+
+# 分析配置
+analysis:
+  # 启用AI分析
+  enabled: true
+  # 最小热度阈值（低于此值不分析）
+  min_hot_score: 100
+  # 分析模板
+  prompt_template: |
+    请对以下热点话题进行深度分析：
+    
+    标题：{title}
+    平台：{platform}
+    热度：{hot_score}
+    
+    请从以下几个方面分析：
+    1. 话题背景与核心内容
+    2. 舆论情感倾向（正面/负面/中性）
+    3. 可能的发展趋势
+    4. 相关关键词
+    5. 建议关注程度（高/中/低）

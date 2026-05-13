@@ -1,0 +1,209 @@
+{% extends "base.html" %}
+
+{% block title %}仪表盘 - TrendPulse{% endblock %}
+
+{% block content %}
+<!-- 页面标题 -->
+<div class="page-header">
+    <h1 class="page-title">📊 仪表盘</h1>
+    <p class="page-subtitle">实时监控多平台热点趋势</p>
+</div>
+
+<!-- 统计卡片 -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon blue">📈</div>
+            <div>
+                <div class="stat-label">总热点数</div>
+                <div class="stat-value">{{ stats.total_items }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon green">📅</div>
+            <div>
+                <div class="stat-label">今日新增</div>
+                <div class="stat-value">{{ stats.today_items }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon orange">🤖</div>
+            <div>
+                <div class="stat-label">已分析</div>
+                <div class="stat-value">{{ stats.analyzed_items }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-header">
+            <div class="stat-icon purple">📢</div>
+            <div>
+                <div class="stat-label">已通知</div>
+                <div class="stat-value">{{ stats.notified_items }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 平台分布 -->
+<div class="card" style="margin-bottom: 2rem;">
+    <div class="card-header">
+        <h3 class="card-title">📊 平台分布</h3>
+    </div>
+    <div class="card-body">
+        {% if stats.platform_distribution %}
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+            {% for platform, count in stats.platform_distribution.items() %}
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: var(--bg-tertiary); border-radius: var(--radius);">
+                <span class="platform-badge platform-{{ platform }}">{{ platform.upper() }}</span>
+                <span style="font-weight: 600;">{{ count }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <div class="empty-title">暂无数据</div>
+            <div class="empty-desc">开始爬取热点数据后将显示平台分布</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 最近热点 -->
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">🔥 最近热点</h3>
+        <a href="/trends" class="btn btn-sm btn-secondary">查看全部</a>
+    </div>
+    <div class="card-body">
+        {% if stats.recent_items %}
+        <div class="trend-list">
+            {% for item in stats.recent_items %}
+            <div class="trend-item">
+                <div class="trend-header">
+                    <a href="{{ item.url or '#' }}" target="_blank" class="trend-title">{{ item.title }}</a>
+                    <span class="platform-badge platform-{{ item.platform }}">{{ item.platform.upper() }}</span>
+                </div>
+                <div class="trend-meta">
+                    <span class="trend-meta-item">📊 {{ item.hot_score }}</span>
+                    {% if item.sentiment %}
+                    <span class="trend-meta-item sentiment-{{ item.sentiment }}">
+                        {% if item.sentiment == 'positive' %}😊{% elif item.sentiment == 'negative' %}😔{% elif item.sentiment == 'mixed' %}🤔{% else %}😐{% endif %}
+                        {{ item.sentiment }}
+                    </span>
+                    {% endif %}
+                    {% if item.priority %}
+                    <span class="trend-meta-item priority-{{ item.priority }}">
+                        {% if item.priority == 'high' %}🔴{% elif item.priority == 'medium' %}🟡{% else %}🟢{% endif %}
+                        {{ item.priority }}
+                    </span>
+                    {% endif %}
+                    <span class="trend-meta-item">🕐 {{ item.created_at.strftime('%m-%d %H:%M') if item.created_at else 'N/A' }}</span>
+                </div>
+                {% if item.summary %}
+                <div class="trend-summary">{{ item.summary[:150] }}{% if item.summary|length > 150 %}...{% endif %}</div>
+                {% endif %}
+                {% if item.keywords %}
+                <div class="trend-tags">
+                    {% for keyword in item.keywords[:5] %}
+                    <span class="badge badge-blue">{{ keyword }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <div class="empty-title">暂无热点数据</div>
+            <div class="empty-desc">点击"立即爬取"开始获取热点数据</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 快捷操作 -->
+<div style="margin-top: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+    <button onclick="triggerCrawl()" class="btn btn-primary">🕷️ 立即爬取</button>
+    <button onclick="triggerAnalyze()" class="btn btn-secondary">🤖 AI分析</button>
+    <button onclick="triggerNotify()" class="btn btn-secondary">📢 发送通知</button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function triggerCrawl() {
+    const btn = event.target;
+    btn.disabled = true;
+    btn.textContent = '🕷️ 爬取中...';
+    
+    try {
+        const response = await fetch('/api/crawl', { method: 'POST' });
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('✅ ' + result.message);
+            location.reload();
+        } else {
+            alert('❌ ' + result.message);
+        }
+    } catch (error) {
+        alert('❌ 请求失败: ' + error.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '🕷️ 立即爬取';
+    }
+}
+
+async function triggerAnalyze() {
+    const btn = event.target;
+    btn.disabled = true;
+    btn.textContent = '🤖 分析中...';
+    
+    try {
+        const response = await fetch('/api/analyze', { method: 'POST' });
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('✅ ' + result.message);
+            location.reload();
+        } else {
+            alert('❌ ' + result.message);
+        }
+    } catch (error) {
+        alert('❌ 请求失败: ' + error.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '🤖 AI分析';
+    }
+}
+
+async function triggerNotify() {
+    const btn = event.target;
+    btn.disabled = true;
+    btn.textContent = '📢 发送中...';
+    
+    try {
+        const response = await fetch('/api/notify', { method: 'POST' });
+        const result = await response.json();
+        
+        if (result.success) {
+            alert('✅ ' + result.message);
+        } else {
+            alert('❌ ' + result.message);
+        }
+    } catch (error) {
+        alert('❌ 请求失败: ' + error.message);
+    } finally {
+        btn.disabled = false;
+        btn.textContent = '📢 发送通知';
+    }
+}
+</script>
+{% endblock %}
